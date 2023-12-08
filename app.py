@@ -1,4 +1,6 @@
 import datetime
+import os
+import configparser
 
 from flask import Flask
 from flask import g
@@ -10,10 +12,21 @@ from functools import wraps
 from hashlib import md5
 from peewee import *
 
-# config - aside from our database, the rest is for use by Flask
-DATABASE = 'tweepee.db'
-DEBUG = True
-SECRET_KEY = 'hin6bab8ge25*r=x&amp;+5$0kn=-#log$pt^#@vrqjld!^2ci@g*b'
+
+# Read the configuration file
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# Set environment variables
+os.environ['DB_USER'] = config['database']['user']
+os.environ['DB_PASSWORD'] = config['database']['password']
+os.environ['DB_HOST'] = config['database']['host']
+os.environ['DB_PORT'] = config['database']['port']
+os.environ['DB_NAME'] = config['database']['name']
+
+# Flask configuration
+DEBUG = config['flask'].getboolean('DEBUG')
+SECRET_KEY = config['flask']['SECRET_KEY']
 
 # create a flask application - this ``app`` object will be used to handle
 # inbound requests, routing them to the proper 'view' functions, etc
@@ -22,7 +35,13 @@ app.config.from_object(__name__)
 
 # create a peewee database instance -- our models will use this database to
 # persist information
-database = SqliteDatabase(DATABASE)
+database = PostgresqlDatabase(
+    os.environ['DB_NAME'],
+    user=os.environ['DB_USER'],
+    password=os.environ['DB_PASSWORD'],
+    host=os.environ['DB_HOST'],
+    port=int(os.environ['DB_PORT'])
+)
 
 # model definitions -- the standard "pattern" is to define a base model class
 # that specifies which database to use.  then, any subclasses will automatically
@@ -107,10 +126,21 @@ def auth_user(user):
     session['username'] = user.username
     flash('You are logged in as %s' % (user.username))
 
+# # get the user from the session
+# def get_current_user():
+#     if session.get('logged_in'):
+#         return User.get(User.id == session['user_id'])
+
 # get the user from the session
 def get_current_user():
     if session.get('logged_in'):
-        return User.get(User.id == session['user_id'])
+        user_id = session.get('user_id')
+        if user_id:
+            try:
+                return User.get(User.id == user_id)
+            except DoesNotExist:
+                return None
+    return None
 
 # view decorator which indicates that the requesting user must be authenticated
 # before they can access the view.  it checks the session to see if they're
@@ -177,11 +207,16 @@ def private_timeline():
     # messages where the person who created the message is someone the current
     # user is following.  these messages are then ordered newest-first.
     user = get_current_user()
-    messages = (Message
-                .select()
-                .where(Message.user << user.following())
-                .order_by(Message.pub_date.desc()))
-    return object_list('private_messages.html', messages, 'message_list')
+    if user:
+        messages = (Message
+                    .select()
+                    .where(Message.user << user.following())
+                    .order_by(Message.pub_date.desc()))
+        return object_list('private_messages.html', messages, 'message_list')
+    else:
+        # Handle the case where the user is not found or not logged in
+        flash('You need to log in to view your private timeline.', 'warning')
+        return redirect(url_for('login'))
 
 @app.route('/public/')
 def public_timeline():
