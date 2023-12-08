@@ -11,7 +11,7 @@ STRAIGHT UP
 As a Maker
 So that I can let people know what I am doing
 I want to post a message (peep) to chitter
- => each peep will have: content, by user (handle)
+ => each peep display will have: content, by user (handle)
 
 As a maker
 So that I can see what others are saying
@@ -42,7 +42,8 @@ ADVANCED
 As a Maker
 So that I can stay constantly tapped in to the shouty box of Chitter
 I want to receive an email if I am tagged in a Peep
- => build Notifications class and setup API
+ => build Tags 
+ => build Notifications class and setup API to send emails
 ```
 
 ## Additional Notes
@@ -67,3 +68,19 @@ Mapper as the database interface, instead of implementing your own Repository
 classes. You can research Python ORMs to decide which to use, but
 [Peewee](https://github.com/coleifer/peewee) is a popular choice.
 
+
+Action plan:
+- change login to store full name as well
+- create seeding system and seed hard coded data before tests
+- add to each peep display: content, by full_name (username), time posted
+- build Notifications class and setup API to send emails, and record action on db
+- add logged in user name next to log out, maybe on the same button
+
+TDD:
+- db: connection, create, read, update, delete (CRUD)
+- visitor: view of homepage, read-only access
+- user signup: uniques, db
+- user login and logout: session 
+- peep: CRUD, display(x3)
+- email notification: email sent, db recorded
+- write README.md with complete project setup
