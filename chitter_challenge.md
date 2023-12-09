@@ -70,16 +70,24 @@ classes. You can research Python ORMs to decide which to use, but
 
 
 Action plan:
-- change login to store full name as well
+- change login to store full name as well (big change!!!) => DB => MCV
+    => 
 - create seeding system and seed hard coded data before tests
-- add to each peep display: content, by full_name (username), time posted
+- add to each peep display: content, by full_name + (@username), time posted
 - build Notifications class and setup API to send emails, and record action on db
 - add logged in user name next to log out, maybe on the same button
+- db: connection, create, read, update, delete (CRUD)
+- visitor: view of homepage, read-only access
+- user signup: uniques(username and email), db ✅
+- user login and logout: session ✅
+- peep: CRUD, display(x3)
+- email notification: email sent, db recorded
+- write README.md with complete project setup
 
 TDD:
 - db: connection, create, read, update, delete (CRUD)
 - visitor: view of homepage, read-only access
-- user signup: uniques, db
+- user signup: uniques(username and email), db 
 - user login and logout: session 
 - peep: CRUD, display(x3)
 - email notification: email sent, db recorded

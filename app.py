@@ -55,7 +55,7 @@ class BaseModel(Model):
 class User(BaseModel):
     username = CharField(unique=True)
     password = CharField()
-    email = CharField()
+    email = CharField(unique=True)
     join_date = DateTimeField()
 
     # it often makes sense to put convenience methods on model instances, for
@@ -242,7 +242,7 @@ def join():
             return redirect(url_for('homepage'))
 
         except IntegrityError:
-            flash('That username is already taken')
+            flash('That username or email is already taken')
 
     return render_template('join.html')
 
